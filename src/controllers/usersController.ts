@@ -9,9 +9,10 @@ export async function signUp(req: Request, res: Response): Promise<void> {
 } 
 
 export async function login(req: Request, res: Response): Promise<void> { 
-    const { email, password } = req.body; 
+    const userData = req.body; 
 
-    res.sendStatus(200);
+    const token: string = await usersService.login(userData)
+    res.status(200).send(token);
 } 
 
 export async function logout(req: Request, res: Response): Promise<void> { 
