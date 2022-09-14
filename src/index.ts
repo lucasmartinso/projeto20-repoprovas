@@ -10,7 +10,7 @@ const app = express();
 app.use(json());
 app.use(cors());
 
-//app.use(routers);
+app.use(routers);
 app.use(errorHandler);
 
 const PORT: number = Number(process.env.PORT) || 4200;
