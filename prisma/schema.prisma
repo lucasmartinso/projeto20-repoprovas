@@ -45,8 +45,8 @@ model disciplines {
 
 model teachersDisciplines { 
   id Int @id @default(autoincrement()) 
-  teachers teachers @relation(fields: [teachersId], references: [id])
-  teachersId Int
+  teachers teachers @relation(fields: [teacherId], references: [id])
+  teacherId Int
   disciplines disciplines @relation(fields: [disciplineId], references: [id])
   disciplineId Int 
   tests tests[]
