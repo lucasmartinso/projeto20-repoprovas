@@ -14,5 +14,5 @@ export async function login(req: Request, res: Response): Promise<void> {
     const userData: Omit<users, 'id' | 'createdAt'>  = req.body; 
 
     const token: string = await usersService.login(userData)
-    res.status(200).send(token);
+    res.status(200).send({token});
 } 
