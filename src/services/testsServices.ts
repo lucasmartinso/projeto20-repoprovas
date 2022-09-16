@@ -45,9 +45,15 @@ export async function createTests(testData: createTest): Promise<void> {
 }  
 
 async function getTestsPerDiscipline(period: any): Promise<void> { 
+    let projects = []; 
+    let recuperation = []; 
+    let practice = [];
     for(let i=0; i<period.length; i++) { 
         const tests = await testsRepository.testsPerDiscipline(period[i].name);
-        period[i]= {...period[i], tests} 
+        projects = tests.filter(element => element.category == "Projeto");
+        recuperation = tests.filter(element => element.category == "Recuperação");
+        practice = tests.filter(element => element.category == "Prática");
+        period[i]= {...period[i], projects, recuperation, practice} 
     }
 }
 
@@ -82,7 +88,7 @@ async function organizeTestsPerTeacher(teacher: teachers[], tests: any[]) {
                 } 
                 delete tests[i].tests[j].category;
             }
-            testsPerTeacher[i] = {...testsPerTeacher[i], projetos: projects, recuperação: recuperation, prática: practice}
+            testsPerTeacher[i] = {...testsPerTeacher[i], projects, recuperation, practice}
             projects = []; 
             recuperation = []; 
             practice = [];
