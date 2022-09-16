@@ -36,7 +36,7 @@ export async function findTearcherDiscipline(disciplineId: number | undefined, t
     return result;
 } 
 
-export async function disciplinesPerPeriod() {
+export async function disciplinesPerPeriod(): Promise<any[]> {
     const {rows: result} = await connection.query(`
         SELECT json_build_object( 
         'disciplines', json_agg(json_build_object( 
@@ -52,7 +52,7 @@ export async function disciplinesPerPeriod() {
     return result;
 } 
 
-export async function testsPerDiscipline(name: string) { 
+export async function testsPerDiscipline(name: string): Promise<any[]> { 
     const {rows: result} = await connection.query(`
         SELECT t.id, t.name AS project, ts.name AS teacher, c.name AS category
         FROM tests t
@@ -64,5 +64,30 @@ export async function testsPerDiscipline(name: string) {
         GROUP BY c.name, t.id, ts.name
     `,[name]); 
 
+    return result;
+}  
+
+export async function getTeachers(): Promise<teachers[]> { 
+    const result: teachers[] = await prisma.teachers.findMany(); 
+
+    return result;
+}
+
+export async function testsPerTeachers(): Promise<any> { 
+    const { rows: result } = await connection.query(`
+    SELECT json_build_object( 
+        'tests', json_agg(json_build_object( 
+            'id', t.id, 
+            'test', t.name, 
+            'category', c.name, 
+            'teacherId', ts.id
+        )))
+    FROM teachers ts
+    JOIN "teachersDisciplines" td ON td."teacherId" = ts.id
+    JOIN tests t ON t."teacherDisciplineId" = td.id
+    JOIN categories c ON c.id = t."categoryId"
+    GROUP BY ts.id
+    `) 
+   
     return result;
 }

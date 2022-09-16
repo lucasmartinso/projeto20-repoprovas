@@ -10,7 +10,13 @@ export async function createTests(req: Request, res: Response): Promise<void> {
 }  
 
 export async function getTests(req: Request, res: Response) { 
-    const test = await testsService.getTests();
+    const tests: any[] = await testsService.getTests();
     
-    res.status(200).send(test);
-}
+    res.status(200).send(tests);
+} 
+
+export async function getTestsPerTeacher(req: Request, res: Response) { 
+    const testsPerTeacher = await testsService.getTestsPerTeacher();
+    
+    res.status(200).send(testsPerTeacher);
+} 

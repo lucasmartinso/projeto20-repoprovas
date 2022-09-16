@@ -44,16 +44,16 @@ export async function createTests(testData: createTest): Promise<void> {
     await testsRepository.createTest(testInfo);
 }  
 
-async function getTestsPerDiscipline(period: any) { 
+async function getTestsPerDiscipline(period: any): Promise<void> { 
     for(let i=0; i<period.length; i++) { 
         const tests = await testsRepository.testsPerDiscipline(period[i].name);
         period[i]= {...period[i], tests} 
     }
 }
 
-export async function getTests() { 
-    const disciplines = await testsRepository.disciplinesPerPeriod();
-    const disciplinesPerPeriod = disciplines.map(element => element.json_build_object);
+export async function getTests(): Promise<any[]> { 
+    const disciplines: any[] = await testsRepository.disciplinesPerPeriod();
+    const disciplinesPerPeriod: any[] = disciplines.map(element => element.json_build_object);
 
     for(let i=0; i<disciplinesPerPeriod.length; i++) { 
         await getTestsPerDiscipline(disciplinesPerPeriod[i].disciplines);
@@ -61,4 +61,26 @@ export async function getTests() {
 
     
     return disciplinesPerPeriod;
+}  
+
+async function organizeTestsPerTeacher(teacher: teachers[], tests: any[]) { 
+    let testsPerTeacher: any = teacher;
+    for(let i=0; i<teacher.length; i++) { 
+        if(tests[i].tests[i].teacherId === teacher[i].id) { 
+            for(let j=0; j<tests[i].tests.length; j++) delete tests[i].tests[j].teacherId;
+            const test = tests[i].tests;
+            testsPerTeacher[i] = {...testsPerTeacher[i], tests: test}
+        }
+    } 
+
+    return testsPerTeacher;
+}
+
+export async function getTestsPerTeacher(): Promise<any> {
+    const teacher: teachers[] = await testsRepository.getTeachers(); 
+    const tests: any[] = await testsRepository.testsPerTeachers(); 
+    const mapTests: any = tests.map(element => element.json_build_object);
+    const testsPerTeacher = await organizeTestsPerTeacher(teacher, mapTests);
+
+    return testsPerTeacher;
 }
