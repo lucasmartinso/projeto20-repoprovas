@@ -2,6 +2,10 @@ import { categories, disciplines, teachers, teachersDisciplines, tests } from "@
 import * as testsRepository from "../repositories/testsRepository";
 import { createTest } from "../types/types";
 
+async function findTest(name: string) { 
+    const test: tests | null = await testsRepository.findTest(name); 
+    if(test) throw { type: "Conflit", message: "This test name already exist at database"};
+}
 
 async function findCategoryId(categorie: string): Promise<number> { 
     const category: categories | null = await testsRepository.findCategory(categorie);
@@ -25,6 +29,7 @@ async function findTeacherDisciplineId(instructor: string, discipline: string): 
 } 
 
 export async function createTests(testData: createTest): Promise<void> { 
+    await findTest(testData.name);
     const categoryId: number = await findCategoryId(testData.categorie);
 
     const teacherDisciplineId: number = await findTeacherDisciplineId(testData.instructor,testData.discipline);
@@ -37,4 +42,23 @@ export async function createTests(testData: createTest): Promise<void> {
     } 
 
     await testsRepository.createTest(testInfo);
+}  
+
+async function getTestsPerDiscipline(period: any) { 
+    for(let i=0; i<period.length; i++) { 
+        const tests = await testsRepository.testsPerDiscipline(period[i].name);
+        period[i]= {...period[i], tests} 
+    }
+}
+
+export async function getTests() { 
+    const disciplines = await testsRepository.disciplinesPerPeriod();
+    const disciplinesPerPeriod = disciplines.map(element => element.json_build_object);
+
+    for(let i=0; i<disciplinesPerPeriod.length; i++) { 
+        await getTestsPerDiscipline(disciplinesPerPeriod[i].disciplines);
+    }
+
+    
+    return disciplinesPerPeriod;
 }

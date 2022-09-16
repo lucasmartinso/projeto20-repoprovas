@@ -15,7 +15,6 @@ export async function validateTokenAuth(req: Request, res: Response, next: NextF
         const { userId } = jwt.verify(token, SECRET) as { userId: number}
         const user: users | null = await usersService.findUserById(userId);
         res.locals.user = user;
-        console.log(user);
         next();
     } catch (error) {
         throw { type: "Unauthorized", message: "Invalid token"}; 

@@ -7,4 +7,10 @@ export async function createTests(req: Request, res: Response): Promise<void> {
     await testsService.createTests(testData);
 
     res.sendStatus(201);
-} 
+}  
+
+export async function getTests(req: Request, res: Response) { 
+    const test = await testsService.getTests();
+    
+    res.status(200).send(test);
+}
