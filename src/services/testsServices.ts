@@ -63,6 +63,7 @@ export async function getTests(): Promise<any[]> {
 
     for(let i=0; i<disciplinesPerPeriod.length; i++) { 
         await getTestsPerDiscipline(disciplinesPerPeriod[i].disciplines);
+        disciplinesPerPeriod[i] = {period: disciplinesPerPeriod[i]};
     }
 
     

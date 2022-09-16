@@ -80,12 +80,14 @@ export async function testsPerTeachers(): Promise<any> {
             'id', t.id, 
             'test', t.name, 
             'category', c.name, 
-            'teacherId', ts.id
+            'teacherId', ts.id,
+            'discipline', d.name
         )))
     FROM teachers ts
     JOIN "teachersDisciplines" td ON td."teacherId" = ts.id
     JOIN tests t ON t."teacherDisciplineId" = td.id
-    JOIN categories c ON c.id = t."categoryId"
+    JOIN categories c ON c.id = t."categoryId" 
+    JOIN disciplines d ON d.id = td."disciplineId"
     GROUP BY ts.id
     `) 
    
