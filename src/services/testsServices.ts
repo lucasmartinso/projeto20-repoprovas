@@ -65,11 +65,27 @@ export async function getTests(): Promise<any[]> {
 
 async function organizeTestsPerTeacher(teacher: teachers[], tests: any[]) { 
     let testsPerTeacher: any = teacher;
+    let projects = []; 
+    let recuperation = []; 
+    let practice = [];
+
     for(let i=0; i<teacher.length; i++) { 
         if(tests[i].tests[i].teacherId === teacher[i].id) { 
-            for(let j=0; j<tests[i].tests.length; j++) delete tests[i].tests[j].teacherId;
-            const test = tests[i].tests;
-            testsPerTeacher[i] = {...testsPerTeacher[i], tests: test}
+            for(let j=0; j<tests[i].tests.length; j++){
+                delete tests[i].tests[j].teacherId;
+                if(tests[i].tests[j].category==="Projeto") { 
+                    projects.push(tests[i].tests[j]);
+                } else if(tests[i].tests[j].category==="Recuperação") { 
+                    recuperation.push(tests[i].tests[j]);
+                } else if(tests[i].tests[j].category==="Prática") { 
+                    practice.push(tests[i].tests[j]);
+                } 
+                delete tests[i].tests[j].category;
+            }
+            testsPerTeacher[i] = {...testsPerTeacher[i], projetos: projects, recuperação: recuperation, prática: practice}
+            projects = []; 
+            recuperation = []; 
+            practice = [];
         }
     } 
 
@@ -80,7 +96,7 @@ export async function getTestsPerTeacher(): Promise<any> {
     const teacher: teachers[] = await testsRepository.getTeachers(); 
     const tests: any[] = await testsRepository.testsPerTeachers(); 
     const mapTests: any = tests.map(element => element.json_build_object);
-    const testsPerTeacher = await organizeTestsPerTeacher(teacher, mapTests);
+    const testsPerTeacher: any[] = await organizeTestsPerTeacher(teacher, mapTests);
 
     return testsPerTeacher;
 }
