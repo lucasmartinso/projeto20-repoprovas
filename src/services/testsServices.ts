@@ -2,6 +2,10 @@ import { categories, disciplines, teachers, teachersDisciplines, tests } from "@
 import * as testsRepository from "../repositories/testsRepository";
 import { createTest } from "../types/types";
 
+async function findTest(name: string) { 
+    const test: tests | null = await testsRepository.findTest(name); 
+    if(test) throw { type: "Conflit", message: "This test name already exist at database"};
+}
 
 async function findCategoryId(categorie: string): Promise<number> { 
     const category: categories | null = await testsRepository.findCategory(categorie);
@@ -25,6 +29,7 @@ async function findTeacherDisciplineId(instructor: string, discipline: string): 
 } 
 
 export async function createTests(testData: createTest): Promise<void> { 
+    await findTest(testData.name);
     const categoryId: number = await findCategoryId(testData.categorie);
 
     const teacherDisciplineId: number = await findTeacherDisciplineId(testData.instructor,testData.discipline);
@@ -37,4 +42,68 @@ export async function createTests(testData: createTest): Promise<void> {
     } 
 
     await testsRepository.createTest(testInfo);
+}  
+
+async function getTestsPerDiscipline(period: any): Promise<void> { 
+    let projects = []; 
+    let recuperation = []; 
+    let practice = [];
+    for(let i=0; i<period.length; i++) { 
+        const tests = await testsRepository.testsPerDiscipline(period[i].name);
+        projects = tests.filter(element => element.category == "Projeto");
+        recuperation = tests.filter(element => element.category == "Recuperação");
+        practice = tests.filter(element => element.category == "Prática");
+        period[i]= {...period[i], projects, recuperation, practice} 
+    }
+}
+
+export async function getTests(): Promise<any[]> { 
+    const disciplines: any[] = await testsRepository.disciplinesPerPeriod();
+    const disciplinesPerPeriod: any[] = disciplines.map(element => element.json_build_object);
+
+    for(let i=0; i<disciplinesPerPeriod.length; i++) { 
+        await getTestsPerDiscipline(disciplinesPerPeriod[i].disciplines);
+        disciplinesPerPeriod[i] = {period: disciplinesPerPeriod[i]};
+    }
+
+    
+    return disciplinesPerPeriod;
+}  
+
+async function organizeTestsPerTeacher(teacher: teachers[], tests: any[]) { 
+    let testsPerTeacher: any = teacher;
+    let projects = []; 
+    let recuperation = []; 
+    let practice = [];
+
+    for(let i=0; i<teacher.length; i++) { 
+        if(tests[i].tests[i].teacherId === teacher[i].id) { 
+            for(let j=0; j<tests[i].tests.length; j++){
+                delete tests[i].tests[j].teacherId;
+                if(tests[i].tests[j].category==="Projeto") { 
+                    projects.push(tests[i].tests[j]);
+                } else if(tests[i].tests[j].category==="Recuperação") { 
+                    recuperation.push(tests[i].tests[j]);
+                } else if(tests[i].tests[j].category==="Prática") { 
+                    practice.push(tests[i].tests[j]);
+                } 
+                delete tests[i].tests[j].category;
+            }
+            testsPerTeacher[i] = {...testsPerTeacher[i], projects, recuperation, practice}
+            projects = []; 
+            recuperation = []; 
+            practice = [];
+        }
+    } 
+
+    return testsPerTeacher;
+}
+
+export async function getTestsPerTeacher(): Promise<any> {
+    const teacher: teachers[] = await testsRepository.getTeachers(); 
+    const tests: any[] = await testsRepository.testsPerTeachers(); 
+    const mapTests: any = tests.map(element => element.json_build_object);
+    const testsPerTeacher: any[] = await organizeTestsPerTeacher(teacher, mapTests);
+
+    return testsPerTeacher;
 }

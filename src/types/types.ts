@@ -10,4 +10,12 @@ export interface createTest {
     categorie: string; 
     discipline: string;
     instructor: string; 
+} 
+
+export interface test { 
+    discipline: [ 
+        id: number, 
+        name: string, 
+        period: number,
+    ]
 }
