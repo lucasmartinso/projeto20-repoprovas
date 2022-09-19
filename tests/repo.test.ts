@@ -132,20 +132,20 @@ describe("Test POST /tests", () => {
         const { body } = await supertest(app).post("/users/sign-in").send({ email,password }); 
 
         const testData: createTest = await __createTests(false,true);
-        console.log(testData);
 
         const { status } = await supertest(app).post("/tests").set("Authorization", body.token).send(testData);
 
         expect(status).toBe(404);
     }); 
 
-    it("Have to answer 404, if user try to register test's discipline that does't exist", async ()=> { 
+    it("Have to answer 404, if user try to register test with a tecaher that does't exist at database", async ()=> { 
         const { email, password, confirmPassword }: signUp = await __createUser(true);
 
         await supertest(app).post("/users/sign-up").send({ email,password,confirmPassword }); 
         const { body } = await supertest(app).post("/users/sign-in").send({ email,password }); 
 
-        const testData: createTest = await __createTests(false,false);
+        const testData: createTest = await __createTests(true,false);
+        console.log(testData);
 
         const { status } = await supertest(app).post("/tests").set("Authorization", body.token).send(testData);
 
