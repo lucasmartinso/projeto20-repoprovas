@@ -28,7 +28,7 @@ async function main() {
         {name: 'Autoconfiança', termId: 3}, 
     ] 
 
-    await prisma.disciplines.createMany({data: disciplines});  
+    await prisma.disciplines.createMany({data: disciplines, skipDuplicates: true});  
 
     const teachersDisciplines = [ 
         {teacherId: 1, disciplineId: 1},
@@ -39,7 +39,7 @@ async function main() {
         {teacherId: 2, disciplineId: 6}, 
     ] 
 
-    await prisma.teachersDisciplines.createMany({data: teachersDisciplines});  
+    await prisma.teachersDisciplines.createMany({data: teachersDisciplines, skipDuplicates: true});  
 } 
 
 main()
