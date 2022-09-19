@@ -5,7 +5,6 @@ import supertest from "supertest";
 import app from "../src";
 import { signUp, createTest } from "../src/types/types";
 import { __createTests } from "./factories/testsFactory";
-import { faker } from "@faker-js/faker";
 dotenv.config(); 
 
 beforeEach( async () => { 
@@ -13,9 +12,6 @@ beforeEach( async () => {
     await prisma.$executeRaw`TRUNCATE TABLE tests`
 }); 
 
-afterAll( async () => { 
-    await prisma.$disconnect();
-});
 
 describe("Test POST /users/sign-up", () => { 
     it("Have to answer 201, if register user using the correct format", async () => {
@@ -93,18 +89,19 @@ describe("Test POST /users/sign-in", () => {
 }); 
 
 describe("Test POST /tests", () => { 
-    it.todo("Have to answer 201, if the user send the corretly data")/*, async () => { 
+    it("Have to answer 201, if the user send the corretly data", async () => { 
         const { email, password, confirmPassword }: signUp = await __createUser(true);
 
         await supertest(app).post("/users/sign-up").send({ email,password,confirmPassword }); 
         const { body } = await supertest(app).post("/users/sign-in").send({ email,password });
 
-        const testData: createTest = await __createTests(true,true);
+        const testData: createTest = await __createTests(true,true,true);
+        console.log(testData);
 
         const { status } = await supertest(app).post("/tests").set("Authorization", body.token).send(testData);
 
         expect(status).toBe(201);
-    });*/ 
+    }); 
 
     it("Have to answer 401, if the user send his info don't following the schema rules", async()=> { 
         const testData: object = {}; 
@@ -131,26 +128,59 @@ describe("Test POST /tests", () => {
         await supertest(app).post("/users/sign-up").send({ email,password,confirmPassword }); 
         const { body } = await supertest(app).post("/users/sign-in").send({ email,password }); 
 
-        const testData: createTest = await __createTests(false,true);
+        const testData: createTest = await __createTests(false,false,true);
 
         const { status } = await supertest(app).post("/tests").set("Authorization", body.token).send(testData);
 
         expect(status).toBe(404);
     }); 
 
-    it("Have to answer 404, if user try to register test with a tecaher that does't exist at database", async ()=> { 
+    it("Have to answer 404, if user try to register test with a teacher that does't exist at database", async ()=> { 
         const { email, password, confirmPassword }: signUp = await __createUser(true);
 
         await supertest(app).post("/users/sign-up").send({ email,password,confirmPassword }); 
         const { body } = await supertest(app).post("/users/sign-in").send({ email,password }); 
 
-        const testData: createTest = await __createTests(true,false);
-        console.log(testData);
+        const testData: createTest = await __createTests(false,true,false);
 
         const { status } = await supertest(app).post("/tests").set("Authorization", body.token).send(testData);
 
         expect(status).toBe(404);
     })
 
-    it.todo("Have to answer 409, if user try to registreted a test's name already exist")
-})
+    it("Have to answer 409, if user try to registreted a test's name already exist", async() => {  
+        const { email, password, confirmPassword }: signUp = await __createUser(true);
+
+        await supertest(app).post("/users/sign-up").send({ email,password,confirmPassword }); 
+        const { body } = await supertest(app).post("/users/sign-in").send({ email,password }); 
+
+        const testData: createTest = await __createTests(true,true,true);
+
+        await supertest(app).post("/tests").set("Authorization", body.token).send(testData);
+        const { status } = await supertest(app).post("/tests").set("Authorization", body.token).send(testData);
+
+        expect(status).toBe(409);
+    })
+}) 
+
+describe("Test GET /tests", () => { 
+    it("Have to answer 200 and return an array object", async() => { 
+        const { email, password, confirmPassword }: signUp = await __createUser(true);
+
+        await supertest(app).post("/users/sign-up").send({ email,password,confirmPassword }); 
+        const { body } = await supertest(app).post("/users/sign-in").send({ email,password }); 
+
+        const result = await supertest(app).get("/tests").set("Authorization", body.token).send();
+
+        expect(result.status).toBe(200);
+        expect(result.body).toBeInstanceOf(Array);
+    })
+}) 
+
+describe("Test GET /tests/tecahers", () => { 
+    it.todo("Have to answer 200 and return an array object")
+}) 
+
+afterAll( async () => { 
+    await prisma.$disconnect();
+});
