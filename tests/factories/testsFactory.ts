@@ -1,11 +1,16 @@
 import { faker } from "@faker-js/faker";
+import { teachers } from "@prisma/client";
+import prisma from "../../src/databases/prisma";
 
-export async function __createUser(matchPassword: boolean) { 
-    const password: string = await faker.internet.password(10,true,/^[a-zA-Z0-9]{10,}/);
+export async function __createTests(categoryMatch: boolean, instructorMatch: boolean): Promise<{name: string;pdfUrl: string;categorie: string;discipline: string;instructor: string;}> { 
+    const teachers: teachers[] = await prisma.teachers.findMany();
+    console.log(teachers);
     
     return {
-        email: await faker.internet.email(),
-        password: password,
-        confirmPassword: matchPassword ? password : (await faker.internet.password(10,true,/^[a-zA-Z0-9]{10,}/))
+        name: await faker.random.alpha({ count: 10, casing: 'lower'}),
+        pdfUrl: await faker.internet.url(),
+        categorie: await faker.helpers.arrayElement(["Projeto","Prática","Recuperação"]),
+        discipline: categoryMatch ? await faker.helpers.arrayElement(["HTML e CSS","JavaScript","React","Humildade","Planejamento","Autoconfiança"]) : await faker.lorem.words(1), 
+        instructor: await faker.helpers.arrayElement(["Diego Pinho","Bruna Hamori"])
     }
 }
