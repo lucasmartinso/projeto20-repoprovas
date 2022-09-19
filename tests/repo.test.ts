@@ -183,10 +183,7 @@ describe("Test GET /tests/teachers", () => {
         await supertest(app).post("/users/sign-up").send({ email,password,confirmPassword }); 
         const { body } = await supertest(app).post("/users/sign-in").send({ email,password }); 
 
-        const testData: createTest = await __createTests(true,true,true);
-        await supertest(app).post("/tests").set("Authorization", body.token).send(testData);
-
-        const result = await supertest(app).get("/tests").set("Authorization", body.token).send();
+        const result = await supertest(app).get("/tests/teachers").set("Authorization", body.token).send();
 
         expect(result.status).toBe(200);
         expect(result.body).toBeInstanceOf(Array);
