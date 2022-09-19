@@ -96,7 +96,6 @@ describe("Test POST /tests", () => {
         const { body } = await supertest(app).post("/users/sign-in").send({ email,password });
 
         const testData: createTest = await __createTests(true,true,true);
-        console.log(testData);
 
         const { status } = await supertest(app).post("/tests").set("Authorization", body.token).send(testData);
 
@@ -177,8 +176,21 @@ describe("Test GET /tests", () => {
     })
 }) 
 
-describe("Test GET /tests/tecahers", () => { 
-    it.todo("Have to answer 200 and return an array object")
+describe("Test GET /tests/teachers", () => { 
+    it("Have to answer 200 and return an array object", async () => {
+        const { email, password, confirmPassword }: signUp = await __createUser(true);
+
+        await supertest(app).post("/users/sign-up").send({ email,password,confirmPassword }); 
+        const { body } = await supertest(app).post("/users/sign-in").send({ email,password }); 
+
+        const testData: createTest = await __createTests(true,true,true);
+        await supertest(app).post("/tests").set("Authorization", body.token).send(testData);
+
+        const result = await supertest(app).get("/tests").set("Authorization", body.token).send();
+
+        expect(result.status).toBe(200);
+        expect(result.body).toBeInstanceOf(Array);
+    })
 }) 
 
 afterAll( async () => { 
