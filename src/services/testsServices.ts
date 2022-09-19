@@ -72,12 +72,18 @@ export async function getTests(): Promise<any[]> {
 
 async function organizeTestsPerTeacher(teacher: teachers[], tests: any[]) { 
     let testsPerTeacher: any = teacher;
-    let projects = []; 
-    let recuperation = []; 
-    let practice = [];
+    let projects: any[] = []; 
+    let recuperation: any[] = []; 
+    let practice: any[] = [];
+    let k =0;
+    console.log(tests);
 
     for(let i=0; i<teacher.length; i++) { 
-        if(tests[i].tests[i].teacherId === teacher[i].id) { 
+        if(tests[i].tests[i].teacherId !== teacher[i+k].id) { 
+            testsPerTeacher[i+k] = {...testsPerTeacher[i+k], projects, recuperation, practice} 
+            k++;
+        }
+        if(tests[i].tests[i].teacherId === teacher[i+k].id) { 
             for(let j=0; j<tests[i].tests.length; j++){
                 delete tests[i].tests[j].teacherId;
                 if(tests[i].tests[j].category==="Projeto") { 
@@ -89,11 +95,11 @@ async function organizeTestsPerTeacher(teacher: teachers[], tests: any[]) {
                 } 
                 delete tests[i].tests[j].category;
             }
-            testsPerTeacher[i] = {...testsPerTeacher[i], projects, recuperation, practice}
+            testsPerTeacher[i+k] = {...testsPerTeacher[i+k], projects, recuperation, practice}
             projects = []; 
             recuperation = []; 
             practice = [];
-        }
+        } 
     } 
 
     return testsPerTeacher;
@@ -102,8 +108,17 @@ async function organizeTestsPerTeacher(teacher: teachers[], tests: any[]) {
 export async function getTestsPerTeacher(): Promise<any> {
     const teacher: teachers[] = await testsRepository.getTeachers(); 
     const tests: any[] = await testsRepository.testsPerTeachers(); 
-    const mapTests: any = tests.map(element => element.json_build_object);
-    const testsPerTeacher: any[] = await organizeTestsPerTeacher(teacher, mapTests);
+    let mapTests: any
+    let testsPerTeacher: any[] = []
+
+    if(tests.length>0) {
+        mapTests = tests.map(element => element.json_build_object);
+        testsPerTeacher = await organizeTestsPerTeacher(teacher, mapTests);
+    } else {
+        for(let i=0; i<teacher.length; i++) { 
+            testsPerTeacher[i] = {...teacher[i], projects: [], recuperation: [], practice: []}
+        }
+    }
 
     return testsPerTeacher;
 }
